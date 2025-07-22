@@ -8,8 +8,8 @@ from pprint import pformat
 import argparse
 
 
-def create_body_index(xml_string):
-    xml = ET.fromstring(xml_string)
+def bodyToIndex(params: str) -> dict:
+    xml = ET.fromstring(params)
 
     body_to_index = {}
     for index, body in enumerate(xml.findall("*/Body/Name")):
@@ -18,15 +18,19 @@ def create_body_index(xml_string):
     return body_to_index
 
 
-def body_enabled_count(xml_string):
-    xml = ET.fromstring(xml_string)
-    return sum(enabled.text == "true" for enabled in xml.findall("*/Body/Enabled"))
+def rotToQuat(mat: tuple) -> tuple[float, ...]:
+    """Converts rotation matrix to quaternions.
 
+    Args:
+        mat (tuple): Rotation matrix as tuple.
 
-def rotToQuat(mat: tuple) -> tuple:
+    Returns:
+        tuple: Normalized quaternion (r, i, j, k).
+    """
     r11, r12, r13 = mat[0], mat[1], mat[2]
     r21, r22, r23 = mat[3], mat[4], mat[5]
     r31, r32, r33 = mat[6], mat[7], mat[8]
+
     # Numerical errors leads to domain errors, thus, we max to avoid negatives
     r = 0.5 * max(0, 1 + r11 + r22 + r33) ** 0.5
     i = 0.5 * max(0, 1 + r11 - r22 - r33) ** 0.5 * copysign(1.0, r32 - r23)
@@ -35,7 +39,18 @@ def rotToQuat(mat: tuple) -> tuple:
     return (r, i, j, k)
 
 
-def initMav(mavlink_address, lat=0, lon=0, alt=0):
+def initMav(mavlink_address: str, lat: int = 0, lon: int = 0, alt: int = 0) -> mavutil.mavtcp | mavutil.mavtcpin | mavutil.mavudp | mavutil.mavwebsocket | mavutil.mavmcast:
+    """Initilize the MAVLink connection with ArduCopter.
+
+    Args:
+        mavlink_address (str): The address to look communicate with ArduCopter. For example Dronebridge defaults to "tcp:192.168.2.1:5760".
+        lat (int, optional): degE7, Latitude (WGS84). Defaults to 0.
+        lon (int, optional): degE7, Latitude (WGS84). Defaults to 0.
+        alt (int, optional): mm, Altitude (MSL). Positive for up. Defaults to 0.
+
+    Returns:
+        mavutil.mavXXX: Serial, UDP, TCP, etc. mavlink connection
+    """
     print("Connecting to MAV...")
     conn = mavutil.mavlink_connection(mavlink_address)
     print("Waiting for Heartbeat...")
@@ -45,7 +60,12 @@ def initMav(mavlink_address, lat=0, lon=0, alt=0):
     conn.mav.send(msg)
     lat, lon, alt = 0, 0, 0
     print(f"Setting GPS Origin to {lat=}, {lon=}, {alt=}")
-    msg = mavutil.mavlink.MAVLink_gps_global_origin_message(latitude=lat, longitude=lon, altitude=alt, time_usec=int(time()))
+    msg = mavutil.mavlink.MAVLink_gps_global_origin_message(
+        latitude=lat,
+        longitude=lon,
+        altitude=alt,
+        time_usec=int(time()),
+    )
     conn.mav.send(msg)
 
     print("MavLink Initilized!")
@@ -58,11 +78,10 @@ async def initQTM(qtm_address):
         raise Exception("Failed to connect to QTM!")
 
     # Get 6dof settings from qtm
-    xml_string = await conn.get_parameters(parameters=["6d"])
-    body_index = create_body_index(xml_string)
+    params = await conn.get_parameters(parameters=["6d"])
+    body_index = bodyToIndex(params)
 
     print("Found rigid bodies:", pformat(body_index))
-    print(f"{body_enabled_count(xml_string)} of {len(body_index)} 6DoF bodies enabled")
 
     print("QTM Initilized!")
     return conn, body_index
@@ -99,7 +118,7 @@ async def main():
                 q=[r, i, j, k],
                 x=x,
                 y=y,
-                z=z,
+                z=z,  # TODO: Check if z should be inverted
             )
             conn_mav.mav.send(msg)
 
