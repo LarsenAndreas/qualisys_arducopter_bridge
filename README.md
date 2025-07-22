@@ -8,8 +8,8 @@ This project allows relaying Qualisys motion capture data to ArduCopter using th
     - [Qualisys Setup](#qualisys-setup)
     - [ArduCopter Setup](#arducopter-setup)
     - [Python Setup](#python-setup)
-    - [Usage](#usage)
-      - [Verify ArduCopter recived external nav data](#verify-arducopter-recived-external-nav-data)
+  - [Usage](#usage)
+    - [Verify ArduCopter recived external nav data](#verify-arducopter-recived-external-nav-data)
   - [References](#references)
 
 
@@ -76,7 +76,7 @@ Install PyMavLink and Qualisys Python SDK:
 python -m pip install pymavlink qtm-rt
 ```
 
-### Usage
+## Usage
 Ensure QTM is running, is calibrated, and has a rigid body defined. Then, navigate to the folder containing `mocap_bridge.py` using
 ```
 cd C:\path\to\python\file\qualisys_arducopter_bridge
@@ -95,7 +95,7 @@ where
 | `--verbose`         | `-v`      | `bool` | Print additional information, and prevent overwriting console output              |
 
 
-#### Verify ArduCopter recived external nav data
+### Verify ArduCopter recived external nav data
 *IMPORTANT:* Ensure that the MAV has EKF3 Origin set! This can easily be verified in Mission Planner or MavProxy by looking for the quadcopter icon on the map. If it isn't there, don't try to fly the drone, it will almost certainly crash! This should be done automatically by `mocap_bridge.py`, but it is worth verifying before takeoff.
 
 Lastly, if you see following message appearing, then the MAV is receiving pose data from Qualisys:
