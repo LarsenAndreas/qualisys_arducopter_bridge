@@ -1,0 +1,11 @@
+[project]
+name = "qualisys-arducopter-bridge"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pymavlink>=2.4.48",
+    "qtm-rt>=3.0.2",
+    "scipy>=1.16.0",
+]

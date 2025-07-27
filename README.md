@@ -39,22 +39,21 @@ This section contains links to the official documentation. I have added comments
 The main resources are [Getting Started](https://docs.qualisys.com/getting-started/content/getting_started/introduction.htm) and [QTM Documentation](https://docs.qualisys.com/qtm/content/welcome_to_qtm.htm).
 
 1. [Installing QTM and QDS](https://docs.qualisys.com/getting-started/content/getting_started/setting_up_your_system/configuring_the_network/installing_qtm_and_qds.htm)
-   - To process the camera information, we need the *Qualisys Track Manager* (QTM), and its sub-component *Qualisys DHCP Server* (QDS). QTM allows us to define which markers compose the MAV, and stream information on the local network. QDS allows the QTM to identify and communicate with the cameras ⇒ 
+   - To process the camera information, we need the *Qualisys Track Manager* (QTM), and its sub-component *Qualisys DHCP Server* (QDS). QTM allows us to define which markers compose the MAV, and stream information on the local network. QDS allows the QTM to identify and communicate with the cameras.
 
 2. [Running the Configuration Wizard](https://docs.qualisys.com/getting-started/content/34_how_to_configure_qds/running_the_configuration.htm)
    - If you are connected through a router, you will need to look at the [Advanced Network Settings](https://docs.qualisys.com/getting-started/content/34_how_to_configure_qds/advanced_network_settings.htm). To get this to work, while retaining your internet connection, only tick the *Enable QDS operation for the network connection* - don't press the *Autoconfig* button.
 
 3. [Viewing the cameras in QTM](https://docs.qualisys.com/getting-started/content/6_connecting_cameras_series/6d_how_to_set_your_cameras_up_in_qtm/viewing_the_cameras_in_qtm.htm)
-   - The red "record" button in the action bar will also look for your cameras. This will also tell you if the system needs calibration.
 
 4. [Wand Calibration](https://docs.qualisys.com/qtm/content/project_options/wand_calibration.htm?Highlight=calibration)
-   - It might make your life easier, if you place the reference L-bracket in an accessible place - this will make it easier to align the MAV axis later.
+   - **IMPORTANT:** Change the *Axis pointing upwards* to "Negative Z-axis". 
 
 5. [Defining a rigid body in QTM](https://docs.qualisys.com/getting-started/content/17_rigid_body_series/17a_how_to_track_rigid_bodies/defining_a_rigid_body_in_qtm.htm)
    - Changing to the 3D view ([Types of Windows](https://docs.qualisys.com/getting-started/content/16_how_to_set_up_your_qtm_workspace/types_of_windows.htm)) will allow you to define a *rigid body*, i.e. the collection of markers which correspond to the MAV without recording first.
    - There might be other reflective surfaces in the environment, and as such, the system might see more markers than actually present. You can try to optimize this with the [Exposure & Flash Time and Marker Threshold](https://docs.qualisys.com/getting-started/content/getting_started/setting_up_your_system/optimizing_the_camera_settings/exposure___flash_time_and_marker_threshold.htm).
 
-6. Align your MAV with the Qualisys reference such that the the MAV forward is in the x direction. Then reset *Reset Rotation* ([Rigid Body Settings](https://docs.qualisys.com/getting-started/content/17_rigid_body_series/17a_how_to_track_rigid_bodies/rigid_body_settings.htm)) to tell QTM how it should interpret the orientation.
+6. Align your MAV with the Qualisys reference such that the the MAV forward is in the x direction. Then reset *Reset Rotation* ([Rigid Body Settings](https://docs.qualisys.com/getting-started/content/17_rigid_body_series/17a_how_to_track_rigid_bodies/rigid_body_settings.htm)) to tell QTM how it should interpret the orientation. **Be sure to check if Roll, Pitch, and Yaw are still behaving as expected!** I had some trouble with these becoming misaligned with the local coordinate frame. To fix this, I had to delete the rigid body, restart QTM, align the MAV with the global axis, and then define the body. 
 
 ### ArduCopter Setup
 
@@ -74,6 +73,11 @@ Configure ArduCopter as described in [Configuration the drone](https://ardupilot
 Install PyMavLink and Qualisys Python SDK:
 ```
 python -m pip install pymavlink qtm-rt
+```
+
+Alternatively in you have [UV](https://github.com/astral-sh/uv) installed:
+```
+uv sync
 ```
 
 ## Usage
@@ -96,7 +100,7 @@ where
 
 
 ### Verify ArduCopter recived external nav data
-*IMPORTANT:* Ensure that the MAV has EKF3 Origin set! This can easily be verified in Mission Planner or MavProxy by looking for the quadcopter icon on the map. If it isn't there, don't try to fly the drone, it will almost certainly crash! This should be done automatically by `mocap_bridge.py`, but it is worth verifying before takeoff.
+*IMPORTANT:* Ensure that the MAV has EKF3 Origin set! This can easily be verified in Mission Planner or MavProxy by looking for the quadcopter icon on the map. If it isn't there, don't try to fly the drone, it will almost certainly crash! This should be done automatically by `mocap_bridge.py`, but it is worth verifying before takeoff. If it is not set, right click the map in Mission Planner, and set the EKF3 origin.
 
 Lastly, if you see following message appearing, then the MAV is receiving pose data from Qualisys:
 ```
